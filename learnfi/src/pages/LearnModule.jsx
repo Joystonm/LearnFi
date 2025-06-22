@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { groqService } from '../services/groqService';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import BadgeReward from '../components/BadgeReward';
-import TooltipExplainer from '../components/TooltipExplainer';
+import { groqService } from '../services/groqService';
 
 const LearnModule = () => {
   const { topicId } = useParams();
@@ -21,11 +18,6 @@ const LearnModule = () => {
   const [isCorrect, setIsCorrect] = useState(null);
   const [showBadge, setShowBadge] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
-  
-  // Refs for animations
-  const contentRef = useRef(null);
-  const quizRef = useRef(null);
-  const badgeRef = useRef(null);
   
   // List of available topics
   const topics = [
@@ -52,9 +44,19 @@ const LearnModule = () => {
       
       // Fetch explanation for the topic
       const fetchExplanation = async () => {
-        const data = await groqService.getExplanation(topic.title);
-        setExplanation(data);
-        setIsLoading(false);
+        try {
+          const data = await groqService.getExplanation(topic.title);
+          setExplanation(data);
+        } catch (error) {
+          console.error('Error fetching explanation:', error);
+          // Set a default explanation
+          setExplanation({
+            explanation: `This is a placeholder explanation for ${topic.title}. In a real implementation, this would be fetched from an AI service.`,
+            source: 'fallback'
+          });
+        } finally {
+          setIsLoading(false);
+        }
       };
       
       fetchExplanation();
@@ -64,33 +66,32 @@ const LearnModule = () => {
     }
   }, [topicId, navigate]);
   
-  // Animate content when topic changes
-  useEffect(() => {
-    if (!isLoading && contentRef.current) {
-      gsap.fromTo(
-        contentRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
-      );
-    }
-  }, [isLoading, currentTopic]);
-  
   // Handle quiz display
   const handleStartQuiz = async () => {
     setIsLoading(true);
     
-    // Fetch quiz question
-    const quiz = await groqService.getQuizQuestion(currentTopic.title);
-    setQuizData(quiz);
-    setIsLoading(false);
-    setShowQuiz(true);
-    
-    // Animate quiz entrance
-    gsap.fromTo(
-      quizRef.current,
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.2)" }
-    );
+    try {
+      // Fetch quiz question
+      const quiz = await groqService.getQuizQuestion(currentTopic.title);
+      setQuizData(quiz);
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      // Set a default quiz
+      setQuizData({
+        question: `Which of the following best describes ${currentTopic.title}?`,
+        options: [
+          'A mechanism in the Compound Protocol',
+          'A type of cryptocurrency token',
+          'A DeFi lending strategy',
+          'A blockchain consensus algorithm'
+        ],
+        correctIndex: 0,
+        explanation: 'This is a placeholder explanation for the quiz answer.'
+      });
+    } finally {
+      setIsLoading(false);
+      setShowQuiz(true);
+    }
   };
   
   // Handle answer selection
@@ -121,13 +122,6 @@ const LearnModule = () => {
         // Show badge after a short delay
         setTimeout(() => {
           setShowBadge(true);
-          
-          // Animate badge entrance
-          gsap.fromTo(
-            badgeRef.current,
-            { opacity: 0, scale: 0.5 },
-            { opacity: 1, scale: 1, duration: 0.8, ease: "elastic.out(1, 0.5)" }
-          );
         }, 1000);
       }
     }
@@ -187,7 +181,7 @@ const LearnModule = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : (
-            <div ref={contentRef} className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-6">
               {/* Topic Header */}
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-2xl mr-4">
@@ -235,7 +229,7 @@ const LearnModule = () => {
                   </button>
                 </>
               ) : (
-                <div ref={quizRef}>
+                <div>
                   {/* Quiz Question */}
                   <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 mb-6">
                     <h3 className="text-xl font-semibold mb-4">{quizData.question}</h3>
@@ -302,14 +296,15 @@ const LearnModule = () => {
       {/* Badge Reward Modal */}
       {showBadge && earnedBadge && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={badgeRef} className="bg-white rounded-xl shadow-xl p-8 max-w-md text-center">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-md text-center">
             <h2 className="text-2xl font-bold mb-4">🎉 Badge Earned!</h2>
             <div className="mb-6">
-              <BadgeReward badge={earnedBadge} isNew={true} />
+              <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center text-4xl">
+                🎓
+              </div>
+              <h3 className="text-xl font-bold mt-4">{earnedBadge.name}</h3>
+              <p className="text-gray-600 mt-2">{earnedBadge.description}</p>
             </div>
-            <p className="text-gray-700 mb-6">
-              Congratulations! You've earned the "{earnedBadge.name}" badge by completing the quiz.
-            </p>
             <button
               onClick={() => setShowBadge(false)}
               className="btn btn-primary px-8 py-2"

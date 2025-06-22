@@ -8,32 +8,42 @@ const UserContext = createContext();
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
-  // User state
+  // User state with default values
   const [user, setUser] = useState({
-    username: '',
+    username: 'User',
     level: 1,
     experience: 0,
     badges: [],
     completedTopics: [],
     simulationHistory: [],
     balance: {
-      DAI: 0.005,
-      ETH: 0.001,
-      USDC: 10
+      DAI: 100,
+      ETH: 0.1,
+      USDC: 100,
+      WBTC: 0.005
     }
   });
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const savedUser = memoryService.getUserData();
-    if (savedUser) {
-      setUser(savedUser);
+    try {
+      const savedUser = memoryService.getUserData();
+      if (savedUser) {
+        setUser(savedUser);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      // If there's an error, we'll use the default state
     }
   }, []);
 
   // Save user data whenever it changes
   useEffect(() => {
-    memoryService.saveUserData(user);
+    try {
+      memoryService.saveUserData(user);
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
   }, [user]);
 
   // Add experience points and handle level ups
@@ -110,7 +120,7 @@ export const UserProvider = ({ children }) => {
       ...prevUser,
       balance: {
         ...prevUser.balance,
-        [token]: (prevUser.balance[token] || 0) + amount
+        [token]: Math.max(0, (prevUser.balance[token] || 0) + amount)
       }
     }));
   };

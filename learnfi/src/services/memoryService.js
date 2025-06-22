@@ -1,5 +1,4 @@
 // Memory service for storing user data locally
-// This could be replaced with mem0 or another service in the future
 
 const USER_DATA_KEY = 'learnfi_user_data';
 const COMPLETED_TOPICS_KEY = 'learnfi_completed_topics';
@@ -15,81 +14,101 @@ const safelyParseJSON = (json) => {
   }
 };
 
+// Helper function to safely stringify JSON
+const safelyStringifyJSON = (data) => {
+  try {
+    return JSON.stringify(data);
+  } catch (e) {
+    return null;
+  }
+};
+
+// Helper function to safely access localStorage
+const safelyAccessLocalStorage = (operation, key, data = null) => {
+  try {
+    if (operation === 'get') {
+      return localStorage.getItem(key);
+    } else if (operation === 'set') {
+      localStorage.setItem(key, data);
+      return true;
+    } else if (operation === 'remove') {
+      localStorage.removeItem(key);
+      return true;
+    }
+    return null;
+  } catch (e) {
+    console.error(`Error accessing localStorage: ${e.message}`);
+    return null;
+  }
+};
+
 // Save user data to localStorage
 const saveUserData = (userData) => {
-  try {
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
-    return true;
-  } catch (error) {
-    console.error('Error saving user data:', error);
-    return false;
+  const jsonData = safelyStringifyJSON(userData);
+  if (jsonData) {
+    return safelyAccessLocalStorage('set', USER_DATA_KEY, jsonData);
   }
+  return false;
 };
 
 // Get user data from localStorage
 const getUserData = () => {
-  const userData = localStorage.getItem(USER_DATA_KEY);
+  const userData = safelyAccessLocalStorage('get', USER_DATA_KEY);
   return safelyParseJSON(userData);
 };
 
 // Save completed topics
 const saveCompletedTopics = (topics) => {
-  try {
-    localStorage.setItem(COMPLETED_TOPICS_KEY, JSON.stringify(topics));
-    return true;
-  } catch (error) {
-    console.error('Error saving completed topics:', error);
-    return false;
+  const jsonData = safelyStringifyJSON(topics);
+  if (jsonData) {
+    return safelyAccessLocalStorage('set', COMPLETED_TOPICS_KEY, jsonData);
   }
+  return false;
 };
 
 // Get completed topics
 const getCompletedTopics = () => {
-  const topics = localStorage.getItem(COMPLETED_TOPICS_KEY);
+  const topics = safelyAccessLocalStorage('get', COMPLETED_TOPICS_KEY);
   return safelyParseJSON(topics) || [];
 };
 
 // Save badges
 const saveBadges = (badges) => {
-  try {
-    localStorage.setItem(BADGES_KEY, JSON.stringify(badges));
-    return true;
-  } catch (error) {
-    console.error('Error saving badges:', error);
-    return false;
+  const jsonData = safelyStringifyJSON(badges);
+  if (jsonData) {
+    return safelyAccessLocalStorage('set', BADGES_KEY, jsonData);
   }
+  return false;
 };
 
 // Get badges
 const getBadges = () => {
-  const badges = localStorage.getItem(BADGES_KEY);
+  const badges = safelyAccessLocalStorage('get', BADGES_KEY);
   return safelyParseJSON(badges) || [];
 };
 
 // Save simulation history
 const saveSimulationHistory = (history) => {
-  try {
-    localStorage.setItem(SIMULATION_HISTORY_KEY, JSON.stringify(history));
-    return true;
-  } catch (error) {
-    console.error('Error saving simulation history:', error);
-    return false;
+  const jsonData = safelyStringifyJSON(history);
+  if (jsonData) {
+    return safelyAccessLocalStorage('set', SIMULATION_HISTORY_KEY, jsonData);
   }
+  return false;
 };
 
 // Get simulation history
 const getSimulationHistory = () => {
-  const history = localStorage.getItem(SIMULATION_HISTORY_KEY);
+  const history = safelyAccessLocalStorage('get', SIMULATION_HISTORY_KEY);
   return safelyParseJSON(history) || [];
 };
 
 // Clear all user data
 const clearAllData = () => {
   try {
-    localStorage.removeItem(USER_DATA_KEY);
-    localStorage.removeItem(COMPLETED_TOPICS_KEY);
-    localStorage.removeItem(BADGES_KEY);
-    localStorage.removeItem(SIMULATION_HISTORY_KEY);
+    safelyAccessLocalStorage('remove', USER_DATA_KEY);
+    safelyAccessLocalStorage('remove', COMPLETED_TOPICS_KEY);
+    safelyAccessLocalStorage('remove', BADGES_KEY);
+    safelyAccessLocalStorage('remove', SIMULATION_HISTORY_KEY);
     return true;
   } catch (error) {
     console.error('Error clearing user data:', error);

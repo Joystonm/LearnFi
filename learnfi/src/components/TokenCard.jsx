@@ -1,115 +1,56 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import React from 'react';
 import TooltipExplainer from './TooltipExplainer';
-import { useCompound } from '../context/CompoundContext';
 
-const TokenCard = ({ symbol, amount, className = '' }) => {
-  const cardRef = useRef(null);
-  const { calculateSupplyAPY } = useCompound();
-  
-  // Get token details
-  const getTokenDetails = () => {
-    switch (symbol) {
+const TokenCard = ({ token, balance, apy, action, onClick }) => {
+  // Get token icon
+  const getTokenIcon = () => {
+    switch (token) {
       case 'DAI':
-        return {
-          name: 'Dai Stablecoin',
-          color: 'bg-yellow-500',
-          textColor: 'text-yellow-800',
-          bgColor: 'bg-yellow-100',
-          icon: '💰'
-        };
-      case 'ETH':
-        return {
-          name: 'Ethereum',
-          color: 'bg-blue-500',
-          textColor: 'text-blue-800',
-          bgColor: 'bg-blue-100',
-          icon: '💎'
-        };
+        return '💰';
       case 'USDC':
-        return {
-          name: 'USD Coin',
-          color: 'bg-blue-500',
-          textColor: 'text-blue-800',
-          bgColor: 'bg-blue-100',
-          icon: '💵'
-        };
+        return '💵';
+      case 'ETH':
+        return '💎';
       case 'WBTC':
-        return {
-          name: 'Wrapped Bitcoin',
-          color: 'bg-orange-500',
-          textColor: 'text-orange-800',
-          bgColor: 'bg-orange-100',
-          icon: '🔶'
-        };
+        return '🔶';
       default:
-        return {
-          name: symbol,
-          color: 'bg-gray-500',
-          textColor: 'text-gray-800',
-          bgColor: 'bg-gray-100',
-          icon: '🪙'
-        };
+        return '🪙';
     }
   };
   
-  const tokenDetails = getTokenDetails();
-  const apy = calculateSupplyAPY(symbol);
-  
-  // Add hover animation
-  useEffect(() => {
-    const card = cardRef.current;
-    
-    const enterAnimation = () => {
-      gsap.to(card, {
-        scale: 1.02,
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        duration: 0.2
-      });
-    };
-    
-    const leaveAnimation = () => {
-      gsap.to(card, {
-        scale: 1,
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-        duration: 0.2
-      });
-    };
-    
-    card.addEventListener('mouseenter', enterAnimation);
-    card.addEventListener('mouseleave', leaveAnimation);
-    
-    return () => {
-      card.removeEventListener('mouseenter', enterAnimation);
-      card.removeEventListener('mouseleave', leaveAnimation);
-    };
-  }, []);
-  
   return (
     <div 
-      ref={cardRef}
-      className={`flex items-center p-4 rounded-lg border border-gray-200 ${tokenDetails.bgColor} ${className}`}
+      className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={onClick}
     >
-      <div className={`w-10 h-10 rounded-full ${tokenDetails.color} flex items-center justify-center text-white mr-4`}>
-        <span>{tokenDetails.icon}</span>
-      </div>
-      
-      <div className="flex-grow">
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium">{symbol}</h3>
-          <span className="token-balance font-bold">{amount.toFixed(4)}</span>
-        </div>
-        
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-xs text-gray-500">{tokenDetails.name}</span>
-          <div className="flex items-center">
-            <span className="text-xs text-green-600 mr-1">{apy.toFixed(2)}% APY</span>
-            <TooltipExplainer 
-              content={`Annual Percentage Yield for supplying ${symbol} to Compound`}
-            />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl mr-3">
+            {getTokenIcon()}
+          </div>
+          <div>
+            <h3 className="font-medium">{token}</h3>
+            <p className="text-xs text-gray-500">
+              {balance} {token}
+            </p>
           </div>
         </div>
+        
+        <div className="flex items-center">
+          <span className="text-sm font-medium text-green-600 mr-1">{apy}% APY</span>
+          <TooltipExplainer content={`This is the current Annual Percentage Yield for ${action === 'supply' ? 'supplying' : 'borrowing'} ${token}.`} />
+        </div>
       </div>
+      
+      <button
+        className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+          action === 'supply'
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-purple-600 text-white hover:bg-purple-700'
+        }`}
+      >
+        {action === 'supply' ? 'Supply' : 'Borrow'} {token}
+      </button>
     </div>
   );
 };

@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { gsap } from 'gsap';
 import { useUser } from '../context/UserContext';
 
 const Header = () => {
   const location = useLocation();
   const { user } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const headerRef = useRef(null);
-  const logoRef = useRef(null);
   
   // Navigation links
   const navLinks = [
@@ -27,49 +24,12 @@ const Header = () => {
     return location.pathname.startsWith(path);
   };
   
-  // GSAP animations on component mount
-  useEffect(() => {
-    // Animate header on mount
-    gsap.from(headerRef.current, { 
-      y: -50, 
-      opacity: 0, 
-      duration: 0.8, 
-      ease: "power3.out" 
-    });
-    
-    // Subtle logo animation
-    gsap.to(logoRef.current, {
-      rotate: 5,
-      duration: 2,
-      repeat: -1,
-      yoyo: true,
-      ease: "sine.inOut"
-    });
-  }, []);
-  
-  // Animate mobile menu
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      gsap.fromTo(
-        ".mobile-menu",
-        { opacity: 0, y: -20 },
-        { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }
-      );
-    }
-  }, [isMobileMenuOpen]);
-  
   return (
-    <header 
-      ref={headerRef}
-      className="bg-white shadow-md py-4 px-6"
-    >
+    <header className="bg-white shadow-md py-4 px-6">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <div 
-            ref={logoRef}
-            className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-2"
-          >
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-2">
             LF
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -139,7 +99,7 @@ const Header = () => {
       
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden mt-4 mobile-menu">
+        <div className="md:hidden mt-4">
           <nav className="flex flex-col space-y-3 px-4 py-3 bg-gray-50 rounded-lg">
             {navLinks.map((link) => (
               <Link

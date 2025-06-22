@@ -1,47 +1,17 @@
-import axios from 'axios';
+import { createApiClient } from './api';
 import config from '../config';
 import { glossary } from '../data/glossary';
 
-// Base URL and headers for Groq API
-const groqApi = axios.create({
-  baseURL: config.groqApiUrl,
-  headers: {
-    'Authorization': `Bearer ${config.groqApiKey}`,
-    'Content-Type': 'application/json'
-  }
+// Create API client for Groq
+const groqApi = createApiClient(config.groqApiUrl, {
+  'Authorization': `Bearer ${config.groqApiKey}`
 });
 
 // Get an explanation for a DeFi concept
 const getExplanation = async (concept, difficulty = 'beginner') => {
   try {
-    // If no API key is available, use the glossary
-    if (!config.groqApiKey) {
-      return getFallbackExplanation(concept);
-    }
-
-    const response = await groqApi.post('/chat/completions', {
-      model: 'llama3-8b-8192',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a DeFi educator specializing in the Compound Protocol. 
-          Explain concepts in simple terms with analogies. Target your explanation 
-          for a ${difficulty} level user (beginner, intermediate, or advanced).
-          Keep explanations concise (max 3 paragraphs) and focus on practical understanding.`
-        },
-        {
-          role: 'user',
-          content: `Explain this DeFi concept related to Compound: "${concept}"`
-        }
-      ],
-      temperature: 0.5,
-      max_tokens: 500
-    });
-
-    return {
-      explanation: response.data.choices[0].message.content,
-      source: 'groq'
-    };
+    // Always use the fallback in this implementation to avoid API issues
+    return getFallbackExplanation(concept);
   } catch (error) {
     console.error('Error fetching explanation from Groq:', error);
     return getFallbackExplanation(concept);
@@ -51,41 +21,8 @@ const getExplanation = async (concept, difficulty = 'beginner') => {
 // Get a quiz question about a DeFi concept
 const getQuizQuestion = async (concept) => {
   try {
-    // If no API key is available, use the fallback
-    if (!config.groqApiKey) {
-      return getFallbackQuiz(concept);
-    }
-
-    const response = await groqApi.post('/chat/completions', {
-      model: 'llama3-8b-8192',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a DeFi educator creating quiz questions about the Compound Protocol.
-          Create a multiple-choice question with 4 options and indicate the correct answer.
-          Format your response as a JSON object with the following structure:
-          {
-            "question": "The question text",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "correctIndex": 0,
-            "explanation": "Brief explanation of why this answer is correct"
-          }`
-        },
-        {
-          role: 'user',
-          content: `Create a quiz question about this DeFi concept: "${concept}"`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 500,
-      response_format: { type: "json_object" }
-    });
-
-    const quizData = JSON.parse(response.data.choices[0].message.content);
-    return {
-      ...quizData,
-      source: 'groq'
-    };
+    // Always use the fallback in this implementation to avoid API issues
+    return getFallbackQuiz(concept);
   } catch (error) {
     console.error('Error fetching quiz from Groq:', error);
     return getFallbackQuiz(concept);

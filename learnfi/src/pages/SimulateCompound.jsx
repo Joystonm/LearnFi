@@ -1,9 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import React, { useState } from 'react';
 import { useCompound } from '../context/CompoundContext';
 import { useUser } from '../context/UserContext';
-import TooltipExplainer from '../components/TooltipExplainer';
-import BadgeReward from '../components/BadgeReward';
 
 const SimulateCompound = () => {
   // Get context data
@@ -16,47 +13,11 @@ const SimulateCompound = () => {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showAnimation, setShowAnimation] = useState(false);
   const [showBadge, setShowBadge] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
   
-  // Refs for animations
-  const formRef = useRef(null);
-  const tokenFlowRef = useRef(null);
-  const badgeRef = useRef(null);
-  
   // Available tokens
   const availableTokens = ['DAI', 'USDC', 'ETH', 'WBTC'];
-  
-  // GSAP animations on component mount
-  useEffect(() => {
-    // Animate form entrance
-    gsap.from(formRef.current, { 
-      opacity: 0, 
-      y: 30, 
-      duration: 0.8, 
-      ease: "power3.out" 
-    });
-    
-    // Add hover animations for buttons
-    gsap.utils.toArray('.action-btn').forEach(btn => {
-      btn.addEventListener('mouseenter', () => {
-        gsap.to(btn, {
-          scale: 1.05,
-          duration: 0.2,
-          ease: "power1.out"
-        });
-      });
-      
-      btn.addEventListener('mouseleave', () => {
-        gsap.to(btn, {
-          scale: 1,
-          duration: 0.2,
-          ease: "power1.out"
-        });
-      });
-    });
-  }, []);
   
   // Handle token selection
   const handleTokenSelect = (token) => {
@@ -107,10 +68,6 @@ const SimulateCompound = () => {
         // Show success message
         setSuccess(`Successfully supplied ${amount} ${selectedToken}`);
         
-        // Show animation
-        setShowAnimation(true);
-        animateTokenFlow('supply');
-        
         // Check if this is the first supply
         if (!user.badges.some(b => b.id === 'first_supply')) {
           const newBadge = {
@@ -126,7 +83,7 @@ const SimulateCompound = () => {
           // Show badge after animation
           setTimeout(() => {
             setShowBadge(true);
-          }, 2000);
+          }, 1000);
         }
       } else {
         setError(result.message);
@@ -149,10 +106,6 @@ const SimulateCompound = () => {
         // Show success message
         setSuccess(`Successfully borrowed ${amount} ${selectedToken}`);
         
-        // Show animation
-        setShowAnimation(true);
-        animateTokenFlow('borrow');
-        
         // Check if this is the first borrow
         if (!user.badges.some(b => b.id === 'first_borrow')) {
           const newBadge = {
@@ -168,7 +121,7 @@ const SimulateCompound = () => {
           // Show badge after animation
           setTimeout(() => {
             setShowBadge(true);
-          }, 2000);
+          }, 1000);
         }
       } else {
         setError(result.message);
@@ -177,46 +130,6 @@ const SimulateCompound = () => {
     
     // Reset form
     setAmount('');
-  };
-  
-  // Animate token flow
-  const animateTokenFlow = (type) => {
-    const tl = gsap.timeline();
-    
-    // Create token elements
-    const container = tokenFlowRef.current;
-    container.innerHTML = '';
-    
-    for (let i = 0; i < 10; i++) {
-      const token = document.createElement('div');
-      token.className = 'absolute w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold';
-      token.textContent = selectedToken.substring(0, 2);
-      container.appendChild(token);
-      
-      // Position tokens randomly
-      gsap.set(token, {
-        x: Math.random() * 200 - 100,
-        y: type === 'supply' ? -50 : 250,
-        opacity: 0
-      });
-      
-      // Animate tokens
-      tl.to(token, {
-        y: type === 'supply' ? 250 : -50,
-        opacity: 1,
-        duration: 1.5,
-        ease: "power1.inOut",
-        delay: Math.random() * 0.5,
-        onComplete: () => {
-          if (i === 9) {
-            // Hide animation after all tokens are done
-            setTimeout(() => {
-              setShowAnimation(false);
-            }, 500);
-          }
-        }
-      }, 0);
-    }
   };
   
   // Get token details
@@ -236,7 +149,7 @@ const SimulateCompound = () => {
       
       <div className="grid md:grid-cols-2 gap-8">
         {/* Simulation Form */}
-        <div ref={formRef} className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-xl font-semibold mb-6">
             {action === 'supply' ? 'Supply Assets' : 'Borrow Assets'}
           </h2>
@@ -244,7 +157,7 @@ const SimulateCompound = () => {
           {/* Action Tabs */}
           <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
             <button
-              className={`flex-1 py-2 rounded-md transition-colors action-btn ${
+              className={`flex-1 py-2 rounded-md transition-colors ${
                 action === 'supply' ? 'bg-white shadow-sm' : 'text-gray-600'
               }`}
               onClick={() => setAction('supply')}
@@ -252,7 +165,7 @@ const SimulateCompound = () => {
               Supply
             </button>
             <button
-              className={`flex-1 py-2 rounded-md transition-colors action-btn ${
+              className={`flex-1 py-2 rounded-md transition-colors ${
                 action === 'borrow' ? 'bg-white shadow-sm' : 'text-gray-600'
               }`}
               onClick={() => setAction('borrow')}
@@ -330,9 +243,6 @@ const SimulateCompound = () => {
                 <div className="flex items-center">
                   <span className="mr-1">Collateral Factor:</span>
                   <span className="font-medium">{getTokenDetails(selectedToken).collateralFactor.toFixed(0)}%</span>
-                  <TooltipExplainer 
-                    content={`You can borrow up to ${getTokenDetails(selectedToken).collateralFactor.toFixed(0)}% of the value of your supplied ${selectedToken}`}
-                  />
                 </div>
                 <div>
                   {action === 'supply' ? 
@@ -360,7 +270,7 @@ const SimulateCompound = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors action-btn"
+              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               {action === 'supply' ? 'Supply' : 'Borrow'} {selectedToken}
             </button>
@@ -440,12 +350,6 @@ const SimulateCompound = () => {
                 <p className="text-sm text-gray-500">You haven't supplied any assets yet</p>
               )}
             </div>
-            
-            {/* Token Flow Animation */}
-            <div 
-              ref={tokenFlowRef}
-              className={`absolute inset-0 ${showAnimation ? 'block' : 'hidden'}`}
-            ></div>
           </div>
           
           {/* Explanation */}
@@ -466,14 +370,15 @@ const SimulateCompound = () => {
       {/* Badge Reward Modal */}
       {showBadge && earnedBadge && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div ref={badgeRef} className="bg-white rounded-xl shadow-xl p-8 max-w-md text-center">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-md text-center">
             <h2 className="text-2xl font-bold mb-4">🎉 Badge Earned!</h2>
             <div className="mb-6">
-              <BadgeReward badge={earnedBadge} isNew={true} />
+              <div className="w-24 h-24 mx-auto bg-blue-100 rounded-full flex items-center justify-center text-4xl">
+                🏆
+              </div>
+              <h3 className="text-xl font-bold mt-4">{earnedBadge.name}</h3>
+              <p className="text-gray-600 mt-2">{earnedBadge.description}</p>
             </div>
-            <p className="text-gray-700 mb-6">
-              Congratulations! You've earned the "{earnedBadge.name}" badge by completing your first {earnedBadge.id === 'first_supply' ? 'supply' : 'borrow'} action.
-            </p>
             <button
               onClick={() => setShowBadge(false)}
               className="btn btn-primary px-8 py-2"

@@ -1,90 +1,35 @@
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import TooltipExplainer from './TooltipExplainer';
+import React from 'react';
 
 const BadgeReward = ({ badge, isNew = false }) => {
-  const badgeRef = useRef(null);
-  
-  // Animate badge when it's new
-  useEffect(() => {
-    if (isNew && badgeRef.current) {
-      // Create a timeline for the badge animation
-      const tl = gsap.timeline({ defaults: { ease: "elastic.out(1.2, 0.5)" } });
-      
-      tl.from(badgeRef.current, { 
-        scale: 0.5, 
-        opacity: 0, 
-        rotation: -10,
-        duration: 1.2
-      })
-      .to(badgeRef.current, {
-        y: -10,
-        duration: 0.5,
-        repeat: 3,
-        yoyo: true
-      }, "-=0.2");
-    }
-  }, [isNew]);
-  
-  // Get badge details based on type
-  const getBadgeDetails = () => {
+  // Determine badge icon based on type
+  const getBadgeIcon = () => {
     switch (badge.type) {
-      case 'completion':
-        return {
-          bgColor: 'bg-blue-100',
-          borderColor: 'border-blue-300',
-          textColor: 'text-blue-800',
-          icon: '🎓'
-        };
       case 'quiz':
-        return {
-          bgColor: 'bg-green-100',
-          borderColor: 'border-green-300',
-          textColor: 'text-green-800',
-          icon: '🧠'
-        };
+        return '🎓';
       case 'simulation':
-        return {
-          bgColor: 'bg-purple-100',
-          borderColor: 'border-purple-300',
-          textColor: 'text-purple-800',
-          icon: '🧪'
-        };
+        return '🏆';
       case 'achievement':
-        return {
-          bgColor: 'bg-yellow-100',
-          borderColor: 'border-yellow-300',
-          textColor: 'text-yellow-800',
-          icon: '🏆'
-        };
+        return '🌟';
       default:
-        return {
-          bgColor: 'bg-gray-100',
-          borderColor: 'border-gray-300',
-          textColor: 'text-gray-800',
-          icon: '🎯'
-        };
+        return '🏅';
     }
   };
   
-  const badgeDetails = getBadgeDetails();
-  
   return (
-    <div 
-      ref={badgeRef}
-      className={`relative flex flex-col items-center p-4 rounded-lg border-2 ${badgeDetails.borderColor} ${badgeDetails.bgColor} text-center`}
-    >
+    <div className={`relative bg-white rounded-lg p-4 shadow-md ${isNew ? 'ring-2 ring-blue-500' : ''}`}>
       {isNew && (
-        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-          New
-        </div>
+        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          NEW
+        </span>
       )}
       
-      <div className="text-3xl mb-2">{badgeDetails.icon}</div>
-      <h3 className={`font-medium text-sm ${badgeDetails.textColor}`}>{badge.name}</h3>
-      
-      <div className="mt-2">
-        <TooltipExplainer content={badge.description} />
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-3xl mb-3">
+          {getBadgeIcon()}
+        </div>
+        
+        <h3 className="font-semibold text-center mb-1">{badge.name}</h3>
+        <p className="text-xs text-gray-500 text-center">{badge.description}</p>
       </div>
     </div>
   );

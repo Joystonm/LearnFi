@@ -1,79 +1,34 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { gsap } from 'gsap';
 import { tavilyService } from '../services/tavilyService';
 
 const Home = () => {
-  // Refs for GSAP animations
-  const heroRef = useRef(null);
-  const logoRef = useRef(null);
-  const ctaRef = useRef(null);
-  const triviaRef = useRef(null);
-  
   // State for trivia
-  const [trivia, setTrivia] = React.useState({
-    fact: "Loading today's DeFi trivia...",
-    source: ""
+  const [trivia, setTrivia] = useState({
+    fact: "Compound was one of the first DeFi protocols to introduce the concept of 'governance tokens' with COMP, allowing token holders to vote on protocol changes.",
+    source: "DeFi Education"
   });
   
   // Fetch trivia on component mount
   useEffect(() => {
     const fetchTrivia = async () => {
-      const triviaData = await tavilyService.getTrivia();
-      setTrivia(triviaData);
+      try {
+        const triviaData = await tavilyService.getTrivia();
+        setTrivia(triviaData);
+      } catch (error) {
+        console.error('Error fetching trivia:', error);
+      }
     };
     
     fetchTrivia();
   }, []);
   
-  // GSAP animations on component mount
-  useEffect(() => {
-    // Create a timeline for hero section animations
-    const tl = gsap.timeline({ defaults: { ease: "back.out(1.7)" } });
-    
-    // Animate hero elements
-    tl.from(heroRef.current, { 
-      opacity: 0, 
-      y: 50, 
-      duration: 1 
-    })
-    .from(logoRef.current, { 
-      opacity: 0,
-      scale: 0.5,
-      rotation: -10,
-      duration: 0.8
-    }, "-=0.5")
-    .from(ctaRef.current, { 
-      opacity: 0,
-      y: 20,
-      duration: 0.6
-    }, "-=0.3")
-    .from(triviaRef.current, { 
-      opacity: 0,
-      y: 30,
-      duration: 0.8
-    }, "-=0.2");
-    
-    // Create a repeating animation for the logo
-    gsap.to(logoRef.current, {
-      rotation: 360,
-      duration: 20,
-      repeat: -1,
-      ease: "none"
-    });
-    
-    return () => {
-      // Clean up animations
-      tl.kill();
-    };
-  }, []);
-  
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col space-y-16">
       {/* Hero Section */}
-      <section className="py-20 px-4 text-center" ref={heroRef}>
+      <section className="py-16 px-4 text-center bg-white rounded-xl shadow-md">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8 flex justify-center" ref={logoRef}>
+          <div className="mb-8 flex justify-center">
             <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white text-4xl font-bold">
               LF
             </div>
@@ -86,16 +41,16 @@ const Home = () => {
             The Gamified, AI-Powered DeFi Playground
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4" ref={ctaRef}>
+          <div className="flex flex-wrap justify-center gap-4">
             <Link 
               to="/learn" 
-              className="btn btn-primary text-lg px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all transform hover:scale-105"
+              className="btn btn-primary text-lg px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               Start Learning DeFi
             </Link>
             <Link 
               to="/simulate" 
-              className="btn btn-secondary text-lg px-8 py-3 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-all transform hover:scale-105"
+              className="btn btn-secondary text-lg px-8 py-3 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
             >
               Try Simulation
             </Link>
@@ -104,7 +59,7 @@ const Home = () => {
       </section>
       
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 rounded-xl">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">How LearnFi Works</h2>
           
@@ -137,7 +92,7 @@ const Home = () => {
       </section>
       
       {/* Trivia Section */}
-      <section className="py-16" ref={triviaRef}>
+      <section className="py-16">
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-blue-50 border border-blue-100 p-6 rounded-xl">
             <h3 className="text-xl font-semibold mb-3 flex items-center">

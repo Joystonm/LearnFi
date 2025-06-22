@@ -1,120 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import React, { useState } from 'react';
 import { useCompound } from '../context/CompoundContext';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import TooltipExplainer from '../components/TooltipExplainer';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const MarketData = () => {
   const { marketData, isLoading } = useCompound();
   const [selectedMarket, setSelectedMarket] = useState(null);
-  const [historicalData, setHistoricalData] = useState({
-    labels: [],
-    datasets: []
-  });
-  
-  // Refs for animations
-  const marketCardsRef = useRef(null);
-  const detailsRef = useRef(null);
-  
-  // Set initial selected market when data loads
-  useEffect(() => {
-    if (marketData && marketData.length > 0 && !selectedMarket) {
-      setSelectedMarket(marketData[0]);
-    }
-  }, [marketData, selectedMarket]);
-  
-  // Generate mock historical data for the selected market
-  useEffect(() => {
-    if (selectedMarket) {
-      // Generate dates for the last 30 days
-      const dates = Array.from({ length: 30 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (29 - i));
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      });
-      
-      // Generate supply APY data with some randomness based on current APY
-      const supplyData = Array.from({ length: 30 }, (_, i) => {
-        const baseApy = selectedMarket.supplyApy * 0.8;
-        const variance = selectedMarket.supplyApy * 0.4;
-        return baseApy + (Math.random() * variance);
-      });
-      
-      // Generate borrow APY data with some randomness based on current APY
-      const borrowData = Array.from({ length: 30 }, (_, i) => {
-        const baseApy = selectedMarket.borrowApy * 0.8;
-        const variance = selectedMarket.borrowApy * 0.4;
-        return baseApy + (Math.random() * variance);
-      });
-      
-      // Set chart data
-      setHistoricalData({
-        labels: dates,
-        datasets: [
-          {
-            label: 'Supply APY',
-            data: supplyData,
-            borderColor: 'rgba(59, 130, 246, 1)',
-            backgroundColor: 'rgba(59, 130, 246, 0.5)',
-            tension: 0.4
-          },
-          {
-            label: 'Borrow APY',
-            data: borrowData,
-            borderColor: 'rgba(239, 68, 68, 1)',
-            backgroundColor: 'rgba(239, 68, 68, 0.5)',
-            tension: 0.4
-          }
-        ]
-      });
-    }
-  }, [selectedMarket]);
-  
-  // GSAP animations on component mount
-  useEffect(() => {
-    if (!isLoading && marketCardsRef.current) {
-      // Animate market cards
-      gsap.from('.market-card', {
-        opacity: 0,
-        y: 20,
-        stagger: 0.1,
-        duration: 0.6,
-        ease: "power2.out"
-      });
-    }
-  }, [isLoading]);
-  
-  // Animate details when selected market changes
-  useEffect(() => {
-    if (selectedMarket && detailsRef.current) {
-      gsap.fromTo(
-        detailsRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
-      );
-    }
-  }, [selectedMarket]);
   
   // Format large numbers with abbreviations
   const formatNumber = (num) => {
@@ -129,32 +18,6 @@ const MarketData = () => {
     }
   };
   
-  // Chart options
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            return `${context.dataset.label}: ${context.raw.toFixed(2)}%`;
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        ticks: {
-          callback: function(value) {
-            return value + '%';
-          }
-        }
-      }
-    }
-  };
-  
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Compound Market Data</h1>
@@ -166,11 +29,11 @@ const MarketData = () => {
       ) : (
         <>
           {/* Market Overview Cards */}
-          <div ref={marketCardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {marketData.map((market) => (
               <div
                 key={market.symbol}
-                className={`market-card p-4 rounded-xl shadow-md transition-colors cursor-pointer ${
+                className={`p-4 rounded-xl shadow-md transition-colors cursor-pointer ${
                   selectedMarket?.symbol === market.symbol
                     ? 'bg-blue-50 border-2 border-blue-300'
                     : 'bg-white hover:bg-gray-50'
@@ -207,7 +70,7 @@ const MarketData = () => {
           
           {/* Selected Market Details */}
           {selectedMarket && (
-            <div ref={detailsRef} className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-xl shadow-md p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                 <div className="flex items-center mb-4 md:mb-0">
                   <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl mr-4">
@@ -240,9 +103,6 @@ const MarketData = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm text-gray-500">Total Supply</p>
-                    <TooltipExplainer 
-                      content="The total amount of this asset supplied to the Compound protocol"
-                    />
                   </div>
                   <p className="text-lg font-bold">{formatNumber(selectedMarket.totalSupply)} {selectedMarket.symbol}</p>
                   <p className="text-sm text-gray-500">${formatNumber(selectedMarket.totalSupply * selectedMarket.price)}</p>
@@ -251,9 +111,6 @@ const MarketData = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm text-gray-500">Total Borrow</p>
-                    <TooltipExplainer 
-                      content="The total amount of this asset borrowed from the Compound protocol"
-                    />
                   </div>
                   <p className="text-lg font-bold">{formatNumber(selectedMarket.totalBorrow)} {selectedMarket.symbol}</p>
                   <p className="text-sm text-gray-500">${formatNumber(selectedMarket.totalBorrow * selectedMarket.price)}</p>
@@ -262,9 +119,6 @@ const MarketData = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm text-gray-500">Utilization Rate</p>
-                    <TooltipExplainer 
-                      content="The percentage of supplied assets that are currently being borrowed"
-                    />
                   </div>
                   <p className="text-lg font-bold">
                     {selectedMarket.totalSupply > 0 
@@ -276,23 +130,9 @@ const MarketData = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm text-gray-500">Exchange Rate</p>
-                    <TooltipExplainer 
-                      content={`The exchange rate between ${selectedMarket.symbol} and c${selectedMarket.symbol}`}
-                    />
                   </div>
                   <p className="text-lg font-bold">1 c{selectedMarket.symbol} = {selectedMarket.exchangeRate.toFixed(6)} {selectedMarket.symbol}</p>
                 </div>
-              </div>
-              
-              {/* APY Chart */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Historical APY (30 Days)</h3>
-                <div className="h-80">
-                  <Line data={historicalData} options={chartOptions} />
-                </div>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  Note: Historical data is simulated for demonstration purposes
-                </p>
               </div>
               
               {/* Market Explanation */}
