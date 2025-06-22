@@ -143,6 +143,21 @@ const SimulateCompound = () => {
     };
   };
   
+  // Calculate borrow limit based on supplied assets and their collateral factors
+  const calculateBorrowLimit = () => {
+    let borrowLimit = 0;
+    
+    // Calculate for each supplied asset: amount * price * collateral factor
+    Object.entries(userCompound.supplied).forEach(([symbol, amount]) => {
+      const market = marketData.find(m => m.symbol === symbol);
+      if (market) {
+        borrowLimit += amount * market.price * market.collateralFactor;
+      }
+    });
+    
+    return borrowLimit.toFixed(2);
+  };
+  
   return (
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Simulate Compound</h1>
@@ -247,7 +262,7 @@ const SimulateCompound = () => {
                 <div>
                   {action === 'supply' ? 
                     `Your balance: ${user.balance[selectedToken]} ${selectedToken}` : 
-                    `Borrow limit: ${(userCompound.collateralValue * 0.75).toFixed(2)} USD`
+                    `Borrow limit: ${calculateBorrowLimit()} USD`
                   }
                 </div>
               </div>

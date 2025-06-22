@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import LearnModule from './pages/LearnModule';
 import SimulateCompound from './pages/SimulateCompound';
 import MarketData from './pages/MarketData';
+import AdvancedFeatures from './pages/AdvancedFeatures';
 import { UserProvider } from './context/UserContext';
 import { CompoundProvider } from './context/CompoundContext';
 
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/learn/:topicId" element={<LearnModule />} />
                 <Route path="/simulate" element={<SimulateCompound />} />
                 <Route path="/market-data" element={<MarketData />} />
+                <Route path="/advanced-features" element={<AdvancedFeatures />} />
               </Routes>
             </main>
             <Footer />

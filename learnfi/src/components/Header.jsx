@@ -13,7 +13,8 @@ const Header = () => {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/learn', label: 'Learn' },
     { path: '/simulate', label: 'Simulate' },
-    { path: '/market-data', label: 'Market Data' }
+    { path: '/market-data', label: 'Market Data' },
+    { path: '/advanced-features', label: 'Advanced Features' }
   ];
   
   // Check if a link is active

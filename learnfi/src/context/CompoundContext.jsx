@@ -111,14 +111,46 @@ export const CompoundProvider = ({ children }) => {
       const cTokenAmount = amount / exchangeRate;
       
       // Update user's compound state
-      setUserCompound(prev => ({
-        ...prev,
-        supplied: {
+      setUserCompound(prev => {
+        const newSupplied = {
           ...prev.supplied,
           [tokenSymbol]: (prev.supplied[tokenSymbol] || 0) + parseFloat(amount)
-        },
-        collateralValue: prev.collateralValue + (parseFloat(amount) * market.price)
-      }));
+        };
+        
+        // Calculate new collateral value with collateral factor applied
+        const newCollateralValue = Object.entries({
+          ...prev.supplied,
+          [tokenSymbol]: (prev.supplied[tokenSymbol] || 0) + parseFloat(amount)
+        }).reduce((total, [symbol, amt]) => {
+          const tokenMarket = marketData.find(m => m.symbol === symbol);
+          if (tokenMarket) {
+            // Apply collateral factor to the supplied value
+            return total + (amt * tokenMarket.price * tokenMarket.collateralFactor);
+          }
+          return total;
+        }, 0);
+        
+        // Calculate total borrowed value
+        const totalBorrowedValue = Object.entries(prev.borrowed)
+          .reduce((total, [symbol, amt]) => {
+            const tokenMarket = marketData.find(m => m.symbol === symbol);
+            return total + (amt * (tokenMarket?.price || 0));
+          }, 0);
+        
+        // Calculate new health factor
+        let newHealth = 100; // Default to 100% if no borrows
+        if (totalBorrowedValue > 0) {
+          // Health factor is the ratio of collateral value (with collateral factor) to borrowed value
+          newHealth = (newCollateralValue / totalBorrowedValue) * 100;
+        }
+        
+        return {
+          ...prev,
+          supplied: newSupplied,
+          collateralValue: newCollateralValue,
+          health: newHealth
+        };
+      });
       
       return {
         success: true,
@@ -142,12 +174,27 @@ export const CompoundProvider = ({ children }) => {
         throw new Error(`Market for ${tokenSymbol} not found`);
       }
       
+      // Calculate collateral value with collateral factor applied
+      const adjustedCollateralValue = Object.entries(userCompound.supplied)
+        .reduce((total, [symbol, amt]) => {
+          const tokenMarket = marketData.find(m => m.symbol === symbol);
+          if (tokenMarket) {
+            // Apply collateral factor to the supplied value
+            return total + (amt * tokenMarket.price * tokenMarket.collateralFactor);
+          }
+          return total;
+        }, 0);
+      
       // Check if user has enough collateral
       const borrowValueInUSD = parseFloat(amount) * market.price;
-      const maxBorrow = userCompound.collateralValue * 0.75; // 75% of collateral value
+      const totalBorrowedValue = Object.entries(userCompound.borrowed)
+        .reduce((total, [symbol, amt]) => {
+          const tokenMarket = marketData.find(m => m.symbol === symbol);
+          return total + (amt * (tokenMarket?.price || 0));
+        }, 0) + borrowValueInUSD;
       
-      if (borrowValueInUSD > maxBorrow) {
-        throw new Error(`Not enough collateral to borrow ${amount} ${tokenSymbol}`);
+      if (totalBorrowedValue > adjustedCollateralValue) {
+        throw new Error(`Not enough collateral to borrow ${amount} ${tokenSymbol}. Your remaining borrow limit is ${(adjustedCollateralValue - totalBorrowedValue + borrowValueInUSD).toFixed(2)} USD.`);
       }
       
       // Update user's compound state
@@ -157,21 +204,32 @@ export const CompoundProvider = ({ children }) => {
           [tokenSymbol]: (prev.borrowed[tokenSymbol] || 0) + parseFloat(amount)
         };
         
-        // Calculate new health factor
+        // Calculate total borrowed value
         const totalBorrowedValue = Object.entries(newBorrowed)
           .reduce((total, [symbol, amt]) => {
             const tokenMarket = marketData.find(m => m.symbol === symbol);
             return total + (amt * (tokenMarket?.price || 0));
           }, 0);
         
-        const newHealth = prev.collateralValue > 0 
-          ? (prev.collateralValue / totalBorrowedValue) * 100
-          : 100;
+        // Calculate collateral value with collateral factor applied
+        const adjustedCollateralValue = Object.entries(prev.supplied)
+          .reduce((total, [symbol, amt]) => {
+            const tokenMarket = marketData.find(m => m.symbol === symbol);
+            if (tokenMarket) {
+              // Apply collateral factor to the supplied value
+              return total + (amt * tokenMarket.price * tokenMarket.collateralFactor);
+            }
+            return total;
+          }, 0);
+        
+        // Calculate new health factor
+        const newHealth = (adjustedCollateralValue / totalBorrowedValue) * 100;
         
         return {
           ...prev,
           borrowed: newBorrowed,
-          health: Math.min(newHealth, 100)
+          collateralValue: adjustedCollateralValue,
+          health: newHealth
         };
       });
       
