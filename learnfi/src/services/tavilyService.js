@@ -6,82 +6,55 @@ const tavilyApi = createApiClient(config.tavilyApiUrl, {
   'X-API-Key': config.tavilyApiKey
 });
 
-// Get DeFi trivia or fun fact
-const getTrivia = async (topic = 'Compound Protocol') => {
+// Get trivia about DeFi
+const getTrivia = async () => {
   try {
-    // Always use the fallback in this implementation to avoid API issues
-    return getFallbackTrivia(topic);
+    // In a real implementation, we would call the Tavily API
+    // For now, we'll return a random trivia fact from our predefined list
+    return getFallbackTrivia();
   } catch (error) {
     console.error('Error fetching trivia from Tavily:', error);
-    return getFallbackTrivia(topic);
+    return getFallbackTrivia();
   }
 };
 
-// Get DeFi news
-const getNews = async (topic = 'Compound Protocol') => {
-  try {
-    // Always use the fallback in this implementation to avoid API issues
-    return getFallbackNews();
-  } catch (error) {
-    console.error('Error fetching news from Tavily:', error);
-    return getFallbackNews();
-  }
-};
-
-// Fallback trivia when API is unavailable
-const getFallbackTrivia = (topic) => {
-  const triviaList = [
+// Get a fallback trivia fact
+const getFallbackTrivia = () => {
+  const triviaFacts = [
     {
       fact: "Compound was one of the first DeFi protocols to introduce the concept of 'governance tokens' with COMP, allowing token holders to vote on protocol changes.",
       source: "DeFi Education"
     },
     {
-      fact: "The total value locked (TVL) in Compound has exceeded billions of dollars, making it one of the largest lending protocols in DeFi.",
-      source: "DeFi Education"
+      fact: "The total value locked (TVL) in DeFi protocols grew from less than $1 billion in 2019 to over $100 billion at its peak in 2021.",
+      source: "DeFi Pulse"
     },
     {
-      fact: "Compound uses an algorithmic interest rate model that adjusts based on supply and demand for each asset.",
-      source: "DeFi Education"
+      fact: "Compound's interest rates automatically adjust based on supply and demand, using an algorithmic interest rate model.",
+      source: "Compound Docs"
+    },
+    {
+      fact: "The concept of 'yield farming' became popular during the 'DeFi Summer' of 2020, when protocols started distributing governance tokens to users.",
+      source: "DeFi History"
+    },
+    {
+      fact: "Liquidations in Compound occur when a borrower's collateral value falls below the required threshold, typically resulting in a liquidation penalty.",
+      source: "Compound Protocol"
+    },
+    {
+      fact: "The collateral factor in Compound determines how much you can borrow against your supplied assets, with stablecoins typically having higher factors than volatile assets.",
+      source: "DeFi Learning"
     },
     {
       fact: "cTokens in Compound automatically earn interest through their exchange rate, which increases over time relative to the underlying asset.",
-      source: "DeFi Education"
-    },
-    {
-      fact: "Compound was founded by Robert Leshner and Geoffrey Hayes in 2017, but the protocol wasn't launched until 2018.",
-      source: "DeFi Education"
+      source: "Compound Documentation"
     }
   ];
   
-  // Return a random trivia fact
-  return triviaList[Math.floor(Math.random() * triviaList.length)];
-};
-
-// Fallback news when API is unavailable
-const getFallbackNews = () => {
-  return [
-    {
-      title: "Compound Releases New Governance Proposal",
-      snippet: "The Compound community is voting on a new proposal to adjust interest rate models for several assets.",
-      url: "#",
-      date: "Recent"
-    },
-    {
-      title: "DeFi Market Analysis: Lending Protocols Lead Growth",
-      snippet: "Compound and other lending protocols show strong growth in total value locked despite market volatility.",
-      url: "#",
-      date: "Recent"
-    },
-    {
-      title: "Educational Resources for DeFi Users Expanding",
-      snippet: "New educational platforms are making it easier for beginners to understand DeFi protocols like Compound.",
-      url: "#",
-      date: "Recent"
-    }
-  ];
+  const randomIndex = Math.floor(Math.random() * triviaFacts.length);
+  return triviaFacts[randomIndex];
 };
 
 export const tavilyService = {
-  getTrivia,
-  getNews
+  getTrivia
 };

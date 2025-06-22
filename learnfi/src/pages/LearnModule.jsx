@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { groqService } from '../services/groqService';
+import { quizQuestions } from '../data/quizQuestions';
+import { calculationExplanations } from '../data/calculationExplanations';
+import ReactMarkdown from 'react-markdown';
 
 const LearnModule = () => {
   const { topicId } = useParams();
@@ -18,6 +21,7 @@ const LearnModule = () => {
   const [isCorrect, setIsCorrect] = useState(null);
   const [showBadge, setShowBadge] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(null);
+  const [showCalculations, setShowCalculations] = useState(false);
   
   // List of available topics
   const topics = [
@@ -41,6 +45,9 @@ const LearnModule = () => {
     if (topic) {
       setCurrentTopic(topic);
       setIsLoading(true);
+      setShowQuiz(false);
+      setSelectedAnswer(null);
+      setIsCorrect(null);
       
       // Fetch explanation for the topic
       const fetchExplanation = async () => {
@@ -71,8 +78,8 @@ const LearnModule = () => {
     setIsLoading(true);
     
     try {
-      // Fetch quiz question
-      const quiz = await groqService.getQuizQuestion(currentTopic.title);
+      // Fetch quiz question for the current topic
+      const quiz = await groqService.getQuizQuestion(currentTopic.title, topicId);
       setQuizData(quiz);
     } catch (error) {
       console.error('Error fetching quiz:', error);
@@ -147,6 +154,11 @@ const LearnModule = () => {
     setShowBadge(false);
   };
   
+  // Toggle calculations display
+  const toggleCalculations = () => {
+    setShowCalculations(!showCalculations);
+  };
+  
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-8">
@@ -204,6 +216,43 @@ const LearnModule = () => {
                       </p>
                     )}
                   </div>
+                  
+                  {/* Calculation Explanation Toggle */}
+                  <div className="mb-8">
+                    <button
+                      onClick={toggleCalculations}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        {showCalculations ? (
+                          <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
+                        ) : (
+                          <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                        )}
+                      </svg>
+                      {showCalculations ? 'Hide Calculations' : 'Show How It\'s Calculated'}
+                    </button>
+                  </div>
+                  
+                  {/* Calculation Explanations */}
+                  {showCalculations && calculationExplanations[topicId] && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8">
+                      <h3 className="text-lg font-semibold mb-4">{calculationExplanations[topicId].title}</h3>
+                      <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3 mb-4">
+                        <div className="flex items-center">
+                          <span className="text-yellow-800 font-medium mr-2">Key Formula:</span>
+                          <code className="bg-white px-2 py-1 rounded border border-yellow-200">
+                            {calculationExplanations[topicId].formula}
+                          </code>
+                        </div>
+                      </div>
+                      <div className="prose max-w-none">
+                        <ReactMarkdown>
+                          {calculationExplanations[topicId].explanation}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Interactive Elements */}
                   <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8">

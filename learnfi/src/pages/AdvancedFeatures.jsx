@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TutorialSystem from '../components/TutorialSystem';
 import TryItYourself from '../components/TryItYourself';
 import MarketStressTesting from '../components/MarketStressTesting';
@@ -15,6 +16,7 @@ import ConceptSimplifier from '../components/ConceptSimplifier';
 import StrategyRecommendation from '../components/StrategyRecommendation';
 
 const AdvancedFeatures = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('interactive-tutorials');
   const [showTutorial, setShowTutorial] = useState(true);
   
@@ -145,7 +147,7 @@ const AdvancedFeatures = () => {
                   </p>
                   <button
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    onClick={() => setShowTutorial(true)}
+                    onClick={() => navigate('/learn')}
                   >
                     Start Tutorial
                   </button>
@@ -210,7 +212,7 @@ const AdvancedFeatures = () => {
                 Test your knowledge with different types of quizzes and challenges.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+             {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white border rounded-xl p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-xl font-semibold mb-3">Difficulty Levels</h3>
                   <p className="text-gray-600 mb-4">
@@ -218,11 +220,11 @@ const AdvancedFeatures = () => {
                   </p>
                   <button
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                    onClick={() => {/* Logic to show quiz */}}
+                    onClick={() => { Logic to show quiz }}
                   >
                     Start Quiz
                   </button>
-                </div>
+                </div> 
                 
                 <div className="bg-white border rounded-xl p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-xl font-semibold mb-3">Scenario Questions</h3>
@@ -231,7 +233,7 @@ const AdvancedFeatures = () => {
                   </p>
                   <button
                     className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
-                    onClick={() => {/* Logic to show scenario */}}
+                    onClick={() => { Logic to show scenario }}
                   >
                     Start Scenario
                   </button>
@@ -244,12 +246,12 @@ const AdvancedFeatures = () => {
                   </p>
                   <button
                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                    onClick={() => {/* Logic to show challenge */}}
+                    onClick={() => { Logic to show challenge }}
                   >
                     Start Challenge
                   </button>
                 </div>
-              </div>
+              </div> */}
               
               <div className="space-y-8">
                 <AdvancedQuiz topic="ctoken" difficulty="medium" />
@@ -268,7 +270,7 @@ const AdvancedFeatures = () => {
               
               <div className="space-y-8">
                 <AILearningAssistant />
-                <ConceptSimplifier concept="Collateral Factor" />
+                {/* <ConceptSimplifier concept="Collateral Factor" /> */}
                 <StrategyRecommendation />
               </div>
             </div>
