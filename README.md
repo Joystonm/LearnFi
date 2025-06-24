@@ -21,7 +21,7 @@ LearnFi is an interactive educational platform that teaches users about DeFi con
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/LearnFi.git
+   git clone https://github.com/Joystonm/LearnFi.git
    cd LearnFi
    ```
 
@@ -104,15 +104,8 @@ learnfi/
 - **State Management**: React Context
 - **Animation**: GSAP (GreenSock)
 - **DeFi Integration**: Compound.js SDK
-- **AI Explanations**: Groq API
-- **Trivia & Fun Facts**: Tavily API
+- **AI Explanations**: Groq API ,Tavily API
 - **Styling**: Tailwind CSS
 - **Memory**: localStorage
 
-## Note on Compound.js Integration
 
-This project uses Compound.js which requires Node.js polyfills in the browser environment. We've configured these polyfills using CRACO (Create React App Configuration Override) to ensure compatibility.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
